@@ -50,6 +50,14 @@
 - `PATCH /purchases/{id}`
   - request: 구매 내역/평점 수정
 
+## 개발 시작
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
 ## 화면/UX 초안
 - 홈: 해당 월 소비 요약을 **파이형 그래프**로 표시하고, 아래로 스크롤하면 날짜순 세부 내역 표시
 - 빈 상태: 내역이 없을 때 "신나는 소비를 해볼까요?" 문구와 귀여운 돈 모양 표시, 클릭 시 **결제내역 신규추가**로 이동
