@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>기프티모아 — 데이터 모델 설계서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1A1F3A;
+    --accent: #FF6B5B;
+    --mint: #3ECFB2;
+    --blue: #4A7FFF;
+    --yellow: #FFD166;
+    --purple: #9B7FFF;
+    --bg: #F7F8FC;
+    --card: #FFFFFF;
+    --border: #E4E7F0;
+    --text: #1A1F3A;
+    --text-sub: #707494;
+    --text-light: #B0B5CC;
+    --code-bg: #F0F2FA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+
+  /* ── 헤더 ── */
+  .doc-header {
+    background: var(--primary);
+    color: white;
+    padding: 48px 60px 40px;
+  }
+  .doc-header .badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .doc-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .doc-header .subtitle { font-size: 14px; color: rgba(255,255,255,0.55); }
+  .doc-meta {
+    display: flex; gap: 32px; margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .doc-meta .item .key { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .doc-meta .item .val { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); }
+
+  /* ── 레이아웃 ── */
+  .content { max-width: 1100px; margin: 0 auto; padding: 48px 40px 0; }
+
+  /* ── 섹션 ── */
+  .section { margin-bottom: 52px; }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--accent);
+    color: white;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── 컬렉션 카드 ── */
+  .collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .collection-card {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,31,58,0.06);
+  }
+  .collection-header {
+    padding: 14px 18px 12px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .collection-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .collection-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .collection-desc {
+    font-size: 10px;
+    color: var(--text-sub);
+    margin-top: 1px;
+  }
+  .collection-body { padding: 14px 18px; }
+
+  /* ── 필드 테이블 ── */
+  .field-table { width: 100%; border-collapse: collapse; }
+  .field-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .field-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #F0F2FA;
+    vertical-align: top;
+  }
+  .field-table tr:last-child td { border-bottom: none; }
+  .field-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+  .field-name.pk { color: var(--accent); }
+  .field-name.fk { color: var(--purple); }
+  .field-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--mint);
+    background: rgba(62,207,178,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .field-desc { font-size: 11px; color: var(--text-sub); }
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .tag-pk { background: rgba(255,107,91,0.12); color: var(--accent); }
+  .tag-fk { background: rgba(155,127,255,0.12); color: var(--purple); }
+  .tag-idx { background: rgba(74,127,255,0.12); color: var(--blue); }
+  .tag-req { background: rgba(255,209,102,0.2); color: #C08A00; }
+  .tag-auto { background: rgba(62,207,178,0.12); color: var(--mint); }
+
+  /* ── ERD 다이어그램 ── */
+  .erd-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(26,31,58,0.06);
+    overflow-x: auto;
+  }
+  .erd {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    min-width: 700px;
+    position: relative;
+  }
+  .erd-col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .erd-node {
+    background: var(--primary);
+    color: white;
+    border-radius: 12px;
+    width: 150px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(26,31,58,0.18);
+  }
+  .erd-node-head {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .erd-node-body { background: #252B4A; padding: 8px 14px; }
+  .erd-field {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    display: flex; gap: 6px; align-items: center;
+  }
+  .erd-field:last-child { border-bottom: none; }
+  .erd-field .fname { color: rgba(255,255,255,0.9); }
+  .erd-field .ftype { color: var(--mint); font-size: 8px; }
+  .erd-field .fpk { color: var(--accent); font-size: 8px; font-weight: 700; }
+  .erd-field .ffk { color: var(--purple); font-size: 8px; font-weight: 700; }
+
+  .erd-arrow {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 60px;
+    gap: 4px;
+    padding-top: 30px;
+  }
+  .erd-line { height: 1px; width: 50px; background: var(--border); position: relative; }
+  .erd-line::after {
+    content: '▶';
+    position: absolute;
+    right: -8px;
+    top: -7px;
+    font-size: 9px;
+    color: var(--text-light);
+  }
+  .erd-rel {
+    font-size: 9px;
+    color: var(--text-sub);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ── Enum 테이블 ── */
+  .enum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .enum-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .enum-head {
+    padding: 10px 16px;
+    background: var(--code-bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary);
+  }
+  .enum-body { padding: 10px 16px; }
+  .enum-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #F5F6FC;
+    font-size: 11px;
+  }
+  .enum-item:last-child { border-bottom: none; }
+  .enum-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--blue);
+    min-width: 100px;
+  }
+  .enum-desc { color: var(--text-sub); }
+
+  /* ── 인덱스 전략 ── */
+  .index-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .index-table th {
+    background: var(--code-bg);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-sub);
+    padding: 10px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .index-table td {
+    padding: 9px 16px;
+    border-bottom: 1px solid #F5F6FC;
+    font-size: 12px;
+  }
+  .index-table tr:last-child td { border-bottom: none; }
+  .index-table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--blue);
+  }
+
+  /* ── 보안 ── */
+  .rule-list { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .rule-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .rule-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .rule-desc { font-size: 11px; color: var(--text-sub); line-height: 1.6; }
+
+  /* ── Firestore 경로 ── */
+  .path-block {
+    background: var(--primary);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    color: rgba(255,255,255,0.85);
+  }
+  .path-block .comment { color: rgba(255,255,255,0.35); }
+  .path-block .collection { color: var(--yellow); }
+  .path-block .doc { color: var(--mint); }
+  .path-block .field { color: rgba(255,255,255,0.65); }
+  .path-block .type { color: var(--blue); }
+
+  /* ── 오프라인 전략 ── */
+  .strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .strategy-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .strategy-card .title { font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .strategy-card .desc { font-size: 11px; color: var(--text-sub); line-height: 1.7; }
+
+  /* ── 색상 칩 ── */
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .chip-red { background: rgba(255,107,91,0.1); color: var(--accent); }
+  .chip-mint { background: rgba(62,207,178,0.1); color: var(--mint); }
+  .chip-blue { background: rgba(74,127,255,0.1); color: var(--blue); }
+  .chip-yellow { background: rgba(255,209,102,0.15); color: #C08A00; }
+  .chip-purple { background: rgba(155,127,255,0.1); color: var(--purple); }
+
+  @media print {
+    body { background: white; }
+    .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ 헤더 ═══ -->
+<div class="doc-header">
+  <div class="badge">Technical Design Document</div>
+  <h1>🎁 기프티모아 — 데이터 모델 설계서</h1>
+  <div class="subtitle">Android · Kakao Login · Firebase Firestore 기반</div>
+  <div class="doc-meta">
+    <div class="item"><div class="key">플랫폼</div><div class="val">Android (Kotlin)</div></div>
+    <div class="item"><div class="key">인증</div><div class="val">Kakao Login SDK</div></div>
+    <div class="item"><div class="key">데이터베이스</div><div class="val">Firebase Firestore</div></div>
+    <div class="item"><div class="key">스토리지</div><div class="val">Firebase Storage</div></div>
+    <div class="item"><div class="key">버전</div><div class="val">v1.0</div></div>
+    <div class="item"><div class="key">작성일</div><div class="val">2026.03.03</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ═══ 1. ERD ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">1</div> ERD — 컬렉션 관계도</div>
+    <div class="erd-wrap">
+      <div class="erd">
+
+        <!-- users -->
+        <div class="erd-col">
+          <div class="erd-node">
+            <div class="erd-node-head">👤 users</div>
+            <div class="erd-node-body">
+              <div class="erd-field"><span class="fpk">PK</span><span class="fname">userId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">kakaoId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">nickname</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">profileImage</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">familyId</span><span class="ftype">string?</span></div>
+              <div class="erd-field"><span class="fname">role</span><span class="ftype">enum</span></div>
+              <div class="erd-field"><span class="fname">fcmToken</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">createdAt</span><span class="ftype">timestamp</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="erd-arrow">
+          <div class="erd-rel">1</div>
+          <div class="erd-line"></div>
+          <div class="erd-rel">N</div>
+        </div>
+
+        <!-- families -->
+        <div class="erd-col">
+          <div class="erd-node">
+            <div class="erd-node-head">👨‍👩‍👧 families</div>
+            <div class="erd-node-body">
+              <div class="erd-field"><span class="fpk">PK</span><span class="fname">familyId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">name</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">adminId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">memberIds</span><span class="ftype">string[]</span></div>
+              <div class="erd-field"><span class="fname">inviteCode</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">createdAt</span><span class="ftype">timestamp</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="erd-arrow">
+          <div class="erd-rel">1</div>
+          <div class="erd-line"></div>
+          <div class="erd-rel">N</div>
+        </div>
+
+        <!-- gifticons -->
+        <div class="erd-col">
+          <div class="erd-node">
+            <div class="erd-node-head">🎁 gifticons</div>
+            <div class="erd-node-body">
+              <div class="erd-field"><span class="fpk">PK</span><span class="fname">gifticonId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="ffk">FK</span><span class="fname">ownerId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="ffk">FK</span><span class="fname">familyId</span><span class="ftype">string?</span></div>
+              <div class="erd-field"><span class="fname">brand</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">productName</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">barcodeNumber</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">expiryDate</span><span class="ftype">timestamp</span></div>
+              <div class="erd-field"><span class="fname">status</span><span class="ftype">enum</span></div>
+              <div class="erd-field"><span class="fname">isShared</span><span class="ftype">boolean</span></div>
+              <div class="erd-field"><span class="fname">imageUrl</span><span class="ftype">string</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="erd-arrow">
+          <div class="erd-rel">1</div>
+          <div class="erd-line"></div>
+          <div class="erd-rel">N</div>
+        </div>
+
+        <!-- usageLogs -->
+        <div class="erd-col">
+          <div class="erd-node">
+            <div class="erd-node-head">📋 usageLogs</div>
+            <div class="erd-node-body">
+              <div class="erd-field"><span class="fpk">PK</span><span class="fname">logId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="ffk">FK</span><span class="fname">gifticonId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="ffk">FK</span><span class="fname">userId</span><span class="ftype">string</span></div>
+              <div class="erd-field"><span class="fname">action</span><span class="ftype">enum</span></div>
+              <div class="erd-field"><span class="fname">usedAt</span><span class="ftype">timestamp</span></div>
+              <div class="erd-field"><span class="fname">memo</span><span class="ftype">string?</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 2. 컬렉션 상세 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">2</div> 컬렉션 상세 스키마</div>
+    <div class="collections-grid">
+
+      <!-- users -->
+      <div class="collection-card">
+        <div class="collection-header">
+          <div class="collection-icon" style="background:rgba(74,127,255,0.1)">👤</div>
+          <div>
+            <div class="collection-name">users</div>
+            <div class="collection-desc">카카오 로그인 사용자 정보</div>
+          </div>
+        </div>
+        <div class="collection-body">
+          <table class="field-table">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr>
+              <td><span class="field-name pk">userId</span><span class="tag tag-pk">PK</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">Firestore 문서 ID (UUID)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">kakaoId</span><span class="tag tag-idx">IDX</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">카카오 고유 사용자 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">nickname</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">카카오 프로필 닉네임</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">profileImage</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">카카오 프로필 이미지 URL</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">familyId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">소속 가족 ID (미가입시 null)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">role</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">FamilyRole</span></td>
+              <td class="field-desc">ADMIN / MEMBER / CHILD</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">fcmToken</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">푸시 알림용 FCM 토큰</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">notifSettings</span></td>
+              <td><span class="field-type">map</span></td>
+              <td class="field-desc">알림 설정 (d7, d3, d1 각 boolean)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">createdAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">최초 가입 시각</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">updatedAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">마지막 수정 시각</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- families -->
+      <div class="collection-card">
+        <div class="collection-header">
+          <div class="collection-icon" style="background:rgba(62,207,178,0.1)">👨‍👩‍👧</div>
+          <div>
+            <div class="collection-name">families</div>
+            <div class="collection-desc">가족 그룹 정보</div>
+          </div>
+        </div>
+        <div class="collection-body">
+          <table class="field-table">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr>
+              <td><span class="field-name pk">familyId</span><span class="tag tag-pk">PK</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">Firestore 문서 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">name</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">가족 그룹 이름</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">adminId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">관리자 userId</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">memberIds</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string[]</span></td>
+              <td class="field-desc">구성원 userId 배열 (최대 10명)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">inviteCode</span><span class="tag tag-idx">IDX</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">6자리 초대 코드 (랜덤 재생성 가능)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">inviteExpiry</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">초대 코드 만료 시각 (48h)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">totalGifticons</span></td>
+              <td><span class="field-type">number</span></td>
+              <td class="field-desc">공유 기프티콘 수 (캐시)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">createdAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">그룹 생성 시각</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- gifticons -->
+      <div class="collection-card" style="grid-column: span 2;">
+        <div class="collection-header">
+          <div class="collection-icon" style="background:rgba(255,107,91,0.1)">🎁</div>
+          <div>
+            <div class="collection-name">gifticons</div>
+            <div class="collection-desc">기프티콘 핵심 데이터 — 앱의 중심 컬렉션</div>
+          </div>
+        </div>
+        <div class="collection-body">
+          <table class="field-table">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr>
+              <td><span class="field-name pk">gifticonId</span><span class="tag tag-pk">PK</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">Firestore 문서 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">ownerId</span><span class="tag tag-fk">FK</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">등록자 userId</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">familyId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">공유 시 families 문서 ID, 비공유시 null</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">brand</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">브랜드명 (예: 스타벅스, BBQ)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">productName</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">상품명</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">barcodeNumber</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">바코드 번호 (AES-256 암호화 저장)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">imageUrl</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">Firebase Storage 원본 이미지 경로</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">thumbnailUrl</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">썸네일 이미지 (리스트 로딩 최적화)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">expiryDate</span><span class="tag tag-req">필수</span><span class="tag tag-idx">IDX</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">유효기간 만료일 (인덱스 — 정렬/필터 핵심)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">amount</span></td>
+              <td><span class="field-type">number?</span></td>
+              <td class="field-desc">금액형 기프티콘의 잔여 금액 (원)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">status</span><span class="tag tag-req">필수</span><span class="tag tag-idx">IDX</span></td>
+              <td><span class="field-type">GifticonStatus</span></td>
+              <td class="field-desc">ACTIVE / USED / EXPIRED / HIDDEN</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">isShared</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">boolean</span></td>
+              <td class="field-desc">가족 공유 여부</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">sharedWith</span></td>
+              <td><span class="field-type">string[]</span></td>
+              <td class="field-desc">공유 대상 userId 배열 (특정 구성원만 공유 시)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">category</span></td>
+              <td><span class="field-type">GifticonCategory</span></td>
+              <td class="field-desc">카페 / 치킨 / 피자 / 편의점 / 기타</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">notifSentDays</span></td>
+              <td><span class="field-type">number[]</span></td>
+              <td class="field-desc">이미 발송된 알림 D-day 배열 (예: [7, 3])</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">usedAt</span></td>
+              <td><span class="field-type">timestamp?</span></td>
+              <td class="field-desc">사용 완료 시각</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">usedBy</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">사용한 구성원 userId</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">createdAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">등록 시각</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">updatedAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">마지막 수정 시각</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- usageLogs -->
+      <div class="collection-card">
+        <div class="collection-header">
+          <div class="collection-icon" style="background:rgba(155,127,255,0.1)">📋</div>
+          <div>
+            <div class="collection-name">usageLogs</div>
+            <div class="collection-desc">기프티콘 이벤트 로그 (서브컬렉션)</div>
+          </div>
+        </div>
+        <div class="collection-body">
+          <table class="field-table">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr>
+              <td><span class="field-name pk">logId</span><span class="tag tag-pk">PK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">자동 생성 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">gifticonId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">대상 기프티콘 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">userId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">행위자 userId</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">userNickname</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">닉네임 스냅샷 (삭제 대비 비정규화)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">action</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">LogAction</span></td>
+              <td class="field-desc">REGISTERED / SHARED / USED / HIDDEN</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">memo</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">사용자 메모</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">timestamp</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">이벤트 발생 시각</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- notifications -->
+      <div class="collection-card">
+        <div class="collection-header">
+          <div class="collection-icon" style="background:rgba(255,209,102,0.15)">🔔</div>
+          <div>
+            <div class="collection-name">notifications</div>
+            <div class="collection-desc">푸시 알림 발송 이력</div>
+          </div>
+        </div>
+        <div class="collection-body">
+          <table class="field-table">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr>
+              <td><span class="field-name pk">notifId</span><span class="tag tag-pk">PK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">알림 문서 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">userId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">수신 대상 userId</td>
+            </tr>
+            <tr>
+              <td><span class="field-name fk">gifticonId</span><span class="tag tag-fk">FK</span></td>
+              <td><span class="field-type">string?</span></td>
+              <td class="field-desc">관련 기프티콘 ID</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">type</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">NotifType</span></td>
+              <td class="field-desc">EXPIRY_WARN / USED / SHARED / INVITE</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">title</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">알림 제목</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">body</span><span class="tag tag-req">필수</span></td>
+              <td><span class="field-type">string</span></td>
+              <td class="field-desc">알림 본문</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">isRead</span></td>
+              <td><span class="field-type">boolean</span></td>
+              <td class="field-desc">읽음 여부 (기본 false)</td>
+            </tr>
+            <tr>
+              <td><span class="field-name">sentAt</span><span class="tag tag-auto">auto</span></td>
+              <td><span class="field-type">timestamp</span></td>
+              <td class="field-desc">발송 시각</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ 3. Enum 정의 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">3</div> Enum / 상수 정의</div>
+    <div class="enum-grid">
+
+      <div class="enum-card">
+        <div class="enum-head">GifticonStatus</div>
+        <div class="enum-body">
+          <div class="enum-item"><span class="enum-val">ACTIVE</span><span class="enum-desc">사용 가능 상태</span></div>
+          <div class="enum-item"><span class="enum-val">USED</span><span class="enum-desc">사용 완료</span></div>
+          <div class="enum-item"><span class="enum-val">EXPIRED</span><span class="enum-desc">유효기간 만료 (자동 전환)</span></div>
+          <div class="enum-item"><span class="enum-val">HIDDEN</span><span class="enum-desc">숨김 처리 (보관함)</span></div>
+        </div>
+      </div>
+
+      <div class="enum-card">
+        <div class="enum-head">FamilyRole</div>
+        <div class="enum-body">
+          <div class="enum-item"><span class="enum-val">ADMIN</span><span class="enum-desc">관리자 — 등록/삭제/초대 가능</span></div>
+          <div class="enum-item"><span class="enum-val">MEMBER</span><span class="enum-desc">구성원 — 등록/사용 가능</span></div>
+          <div class="enum-item"><span class="enum-val">CHILD</span><span class="enum-desc">자녀 — 사용만 가능</span></div>
+        </div>
+      </div>
+
+      <div class="enum-card">
+        <div class="enum-head">GifticonCategory</div>
+        <div class="enum-body">
+          <div class="enum-item"><span class="enum-val">CAFE</span><span class="enum-desc">카페 (스타벅스, 메가커피 등)</span></div>
+          <div class="enum-item"><span class="enum-val">CHICKEN</span><span class="enum-desc">치킨 (BBQ, BHC, 교촌 등)</span></div>
+          <div class="enum-item"><span class="enum-val">PIZZA</span><span class="enum-desc">피자 (도미노, 피자헛 등)</span></div>
+          <div class="enum-item"><span class="enum-val">CONVENIENCE</span><span class="enum-desc">편의점 (CU, GS25, 세븐일레븐)</span></div>
+          <div class="enum-item"><span class="enum-val">DELIVERY</span><span class="enum-desc">배달 앱 (배민, 쿠팡이츠 등)</span></div>
+          <div class="enum-item"><span class="enum-val">CASH</span><span class="enum-desc">금액형 (잔액 차감)</span></div>
+          <div class="enum-item"><span class="enum-val">ETC</span><span class="enum-desc">기타</span></div>
+        </div>
+      </div>
+
+      <div class="enum-card">
+        <div class="enum-head">LogAction</div>
+        <div class="enum-body">
+          <div class="enum-item"><span class="enum-val">REGISTERED</span><span class="enum-desc">기프티콘 등록</span></div>
+          <div class="enum-item"><span class="enum-val">SHARED</span><span class="enum-desc">가족 공유 설정</span></div>
+          <div class="enum-item"><span class="enum-val">UNSHARED</span><span class="enum-desc">공유 해제</span></div>
+          <div class="enum-item"><span class="enum-val">USED</span><span class="enum-desc">사용 완료 처리</span></div>
+          <div class="enum-item"><span class="enum-val">HIDDEN</span><span class="enum-desc">숨김 처리</span></div>
+        </div>
+      </div>
+
+      <div class="enum-card">
+        <div class="enum-head">NotifType</div>
+        <div class="enum-body">
+          <div class="enum-item"><span class="enum-val">EXPIRY_WARN</span><span class="enum-desc">만료 임박 경고 (D-7, D-3, D-1)</span></div>
+          <div class="enum-item"><span class="enum-val">USED_BY_FAMILY</span><span class="enum-desc">가족이 기프티콘 사용</span></div>
+          <div class="enum-item"><span class="enum-val">SHARED</span><span class="enum-desc">공유 기프티콘 등록됨</span></div>
+          <div class="enum-item"><span class="enum-val">FAMILY_INVITE</span><span class="enum-desc">가족 초대 수신</span></div>
+          <div class="enum-item"><span class="enum-val">MEMBER_JOINED</span><span class="enum-desc">새 구성원 합류</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ 4. Firestore 경로 구조 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">4</div> Firestore 컬렉션 경로 구조</div>
+    <div class="path-block">
+<span class="comment">// ── 최상위 컬렉션 ──────────────────────────────────────</span>
+
+<span class="collection">users</span>/
+  <span class="doc">{userId}</span>               <span class="comment">← 사용자 프로필</span>
+    <span class="field">kakaoId</span>: <span class="type">string</span>
+    <span class="field">familyId</span>: <span class="type">string?</span>
+    <span class="field">fcmToken</span>: <span class="type">string</span>
+    <span class="field">notifSettings</span>: <span class="type">{ d7: bool, d3: bool, d1: bool }</span>
+
+<span class="collection">families</span>/
+  <span class="doc">{familyId}</span>              <span class="comment">← 가족 그룹</span>
+    <span class="field">memberIds</span>: <span class="type">string[]</span>
+    <span class="field">inviteCode</span>: <span class="type">string</span>    <span class="comment">← 6자리, 48h 유효</span>
+
+<span class="collection">gifticons</span>/
+  <span class="doc">{gifticonId}</span>            <span class="comment">← 기프티콘 본문</span>
+    <span class="field">ownerId</span>: <span class="type">string</span>
+    <span class="field">familyId</span>: <span class="type">string?</span>
+    <span class="field">barcodeNumber</span>: <span class="type">string</span>  <span class="comment">← AES-256 암호화</span>
+    <span class="field">expiryDate</span>: <span class="type">timestamp</span>
+    <span class="field">status</span>: <span class="type">GifticonStatus</span>
+    <span class="comment">└─ subcollection</span>
+    <span class="collection">    usageLogs</span>/
+      <span class="doc">    {logId}</span>          <span class="comment">← 이벤트 이력</span>
+
+<span class="collection">notifications</span>/
+  <span class="doc">{notifId}</span>               <span class="comment">← 유저별 알림 피드</span>
+    <span class="field">userId</span>: <span class="type">string</span>       <span class="comment">← 인덱스 필드</span>
+    <span class="field">type</span>: <span class="type">NotifType</span>
+    <span class="field">isRead</span>: <span class="type">boolean</span>
+
+<span class="comment">// ── Firebase Storage 경로 ──────────────────────────────</span>
+
+<span class="collection">gifticons</span>/
+  <span class="doc">{userId}</span>/
+    <span class="doc">{gifticonId}</span>/
+      <span class="field">original.jpg</span>         <span class="comment">← 원본 이미지</span>
+      <span class="field">thumb_300.jpg</span>        <span class="comment">← 썸네일 (Cloud Function 자동 생성)</span>
+    </div>
+  </div>
+
+  <!-- ═══ 5. 인덱스 전략 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">5</div> Firestore 복합 인덱스 전략</div>
+    <table class="index-table">
+      <tr>
+        <th>컬렉션</th>
+        <th>인덱스 필드</th>
+        <th>정렬 방향</th>
+        <th>사용 쿼리</th>
+      </tr>
+      <tr>
+        <td>gifticons</td>
+        <td><code>ownerId</code> + <code>status</code> + <code>expiryDate</code></td>
+        <td>ASC / ASC / ASC</td>
+        <td>내 기프티콘 목록 (만료일 오름차순)</td>
+      </tr>
+      <tr>
+        <td>gifticons</td>
+        <td><code>familyId</code> + <code>isShared</code> + <code>status</code> + <code>expiryDate</code></td>
+        <td>ASC / ASC / ASC / ASC</td>
+        <td>가족 공유 기프티콘 필터링</td>
+      </tr>
+      <tr>
+        <td>gifticons</td>
+        <td><code>status</code> + <code>expiryDate</code></td>
+        <td>ASC / ASC</td>
+        <td>만료 임박 배치 처리 (Cloud Scheduler)</td>
+      </tr>
+      <tr>
+        <td>notifications</td>
+        <td><code>userId</code> + <code>isRead</code> + <code>sentAt</code></td>
+        <td>ASC / ASC / DESC</td>
+        <td>안 읽은 알림 최신순 조회</td>
+      </tr>
+      <tr>
+        <td>notifications</td>
+        <td><code>userId</code> + <code>sentAt</code></td>
+        <td>ASC / DESC</td>
+        <td>알림 전체 목록 최신순 조회</td>
+      </tr>
+      <tr>
+        <td>families</td>
+        <td><code>inviteCode</code></td>
+        <td>—</td>
+        <td>초대 코드로 가족 조회</td>
+      </tr>
+      <tr>
+        <td>users</td>
+        <td><code>kakaoId</code></td>
+        <td>—</td>
+        <td>카카오 로그인 시 사용자 조회</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ═══ 6. 보안 규칙 설계 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">6</div> Firebase 보안 규칙 핵심 원칙</div>
+    <div class="rule-list">
+      <div class="rule-item">
+        <div class="rule-icon" style="background:rgba(255,107,91,0.1)">🔒</div>
+        <div>
+          <div class="rule-title">본인 데이터만 쓰기 가능</div>
+          <div class="rule-desc"><code>gifticons</code> 쓰기 시 <code>request.auth.uid == resource.data.ownerId</code> 검증. 타인의 기프티콘은 읽기만 가능 (가족 공유 범위 내).</div>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:rgba(62,207,178,0.1)">👨‍👩‍👧</div>
+        <div>
+          <div class="rule-title">가족 멤버만 공유 기프티콘 조회</div>
+          <div class="rule-desc"><code>isShared == true</code>인 기프티콘은 <code>families/{familyId}.memberIds</code>에 포함된 userId만 읽기 허용. 외부 사용자 접근 차단.</div>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:rgba(155,127,255,0.1)">👑</div>
+        <div>
+          <div class="rule-title">ADMIN만 구성원 삭제 가능</div>
+          <div class="rule-desc"><code>families</code> 문서의 <code>memberIds</code> 배열 수정은 <code>adminId == request.auth.uid</code>인 경우만 허용. CHILD 계정은 <code>gifticons</code> 등록 불가.</div>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:rgba(255,209,102,0.15)">🔑</div>
+        <div>
+          <div class="rule-title">바코드 번호 암호화</div>
+          <div class="rule-desc"><code>barcodeNumber</code> 필드는 클라이언트에서 AES-256으로 암호화 후 저장. 복호화 키는 Android Keystore에 보관. Firestore 규칙으로 원본 평문 저장 차단 불가 → 클라이언트 강제 암호화 구현 필요.</div>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:rgba(74,127,255,0.1)">📋</div>
+        <div>
+          <div class="rule-title">usageLogs 는 append-only</div>
+          <div class="rule-desc">서브컬렉션 <code>usageLogs</code>는 create만 허용, update/delete 금지. 이력 위변조 방지 목적.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 7. 오프라인 / 동시성 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">7</div> 오프라인 지원 & 동시성 처리</div>
+    <div class="strategy-grid">
+      <div class="strategy-card">
+        <div class="title">📴 오프라인 바코드 표시</div>
+        <div class="desc">Firestore의 <strong>persistenceEnabled = true</strong> 설정으로 로컬 캐시 활성화. 네트워크 없이도 기프티콘 상세 및 바코드 조회 가능. 단, 사용 완료 처리는 온라인 시 동기화.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="title">⚡ 동시 사용 충돌 방지</div>
+        <div class="desc">Firestore <strong>Transaction</strong>으로 <code>status</code> 변경 처리. 두 가족 구성원이 동시에 "사용 완료"를 누르면 먼저 커밋된 트랜잭션만 성공 — 나머지는 실패 후 UI 재조회.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="title">🔔 만료 알림 배치</div>
+        <div class="desc"><strong>Cloud Scheduler</strong>가 매일 오전 9시 실행 → <code>expiryDate</code> 기준 D-7, D-3, D-1 해당 기프티콘 조회 → <code>notifSentDays</code>로 중복 발송 방지 → FCM으로 푸시 전송.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="title">🖼️ 이미지 최적화</div>
+        <div class="desc">업로드 시 <strong>Cloud Functions</strong>가 트리거되어 <code>thumb_300.jpg</code> 자동 생성. 목록 화면은 썸네일만 로드, 상세 화면에서만 원본 로드 → 데이터 절약 & 속도 개선.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 8. 카카오 로그인 플로우 ═══ -->
+  <div class="section">
+    <div class="section-title"><div class="num">8</div> 카카오 로그인 → Firebase 연동 플로우</div>
+    <div class="path-block">
+<span class="comment">// ① 카카오 로그인 (Android Kakao SDK)</span>
+<span class="collection">KakaoSDK</span>.login() → <span class="type">OAuthToken</span>(accessToken, refreshToken)
+  ↓
+<span class="comment">// ② 카카오 사용자 정보 조회</span>
+<span class="collection">UserApiClient</span>.me() → <span class="doc">KakaoUser</span> { id, nickname, profileImage }
+  ↓
+<span class="comment">// ③ 서버(Cloud Functions)에 카카오 토큰 전달</span>
+POST <span class="field">/auth/kakao</span> { kakaoAccessToken }
+  ↓
+<span class="comment">// ④ Cloud Functions: 카카오 토큰 검증 → Firebase Custom Token 발급</span>
+<span class="collection">admin</span>.auth().createCustomToken(<span class="type">kakaoId</span>, { nickname, profileImage })
+  → <span class="type">firebaseCustomToken</span>
+  ↓
+<span class="comment">// ⑤ 클라이언트: Firebase Custom Token으로 Firebase 로그인</span>
+<span class="collection">FirebaseAuth</span>.signInWithCustomToken(<span class="type">firebaseCustomToken</span>)
+  → <span class="doc">FirebaseUser</span> { uid }   <span class="comment">← 이 uid 가 userId</span>
+  ↓
+<span class="comment">// ⑥ users/{uid} 문서 upsert (최초 가입 또는 토큰 갱신)</span>
+<span class="collection">firestore</span>.<span class="field">collection</span>('users').<span class="field">doc</span>(uid).<span class="field">set</span>({
+  kakaoId, nickname, profileImage, fcmToken, updatedAt
+}, { merge: <span class="type">true</span> })
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

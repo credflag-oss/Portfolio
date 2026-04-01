@@ -1,0 +1,291 @@
+<!DOCTYPE HTML>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+-->
+<html>
+	<head>
+		<title>기프티모아 | HONGKI CHAI</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style>
+			.project-tabs {
+				display: flex;
+				gap: 12px;
+				flex-wrap: wrap;
+				margin-bottom: 40px;
+			}
+			.tab-btn {
+				padding: 12px 24px;
+				border: 2px solid rgba(255,255,255,0.2);
+				background: transparent;
+				color: rgba(255,255,255,0.7);
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: 600;
+				letter-spacing: 1px;
+				text-transform: uppercase;
+				transition: all 0.2s ease;
+			}
+			.tab-btn:hover {
+				border-color: rgba(255,255,255,0.6);
+				color: #fff;
+			}
+			.tab-btn.active {
+				background: #fff;
+				border-color: #fff;
+				color: #1a1f3a;
+			}
+			.tab-content { display: none; }
+			.tab-content.active { display: block; }
+			.iframe-wrap {
+				width: 100%;
+				border-radius: 8px;
+				overflow: hidden;
+				border: 1px solid rgba(255,255,255,0.1);
+				background: #f7f8fc;
+			}
+			.iframe-wrap iframe {
+				width: 100%;
+				height: 85vh;
+				border: none;
+				display: block;
+			}
+			.tech-grid {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				margin-top: 20px;
+			}
+			.tech-chip {
+				padding: 6px 16px;
+				border-radius: 20px;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.5px;
+			}
+			.chip-blue  { background: rgba(74,127,255,0.2);  color: #7faaff; border: 1px solid rgba(74,127,255,0.4); }
+			.chip-green { background: rgba(62,207,178,0.2);  color: #5fdfca; border: 1px solid rgba(62,207,178,0.4); }
+			.chip-red   { background: rgba(255,107,91,0.2);  color: #ff9b8e; border: 1px solid rgba(255,107,91,0.4); }
+			.chip-purple{ background: rgba(155,127,255,0.2); color: #c0aaff; border: 1px solid rgba(155,127,255,0.4); }
+			.chip-yellow{ background: rgba(255,209,102,0.2); color: #ffd97a; border: 1px solid rgba(255,209,102,0.4); }
+			.info-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 20px;
+				margin-top: 24px;
+			}
+			.info-card {
+				background: rgba(255,255,255,0.05);
+				border: 1px solid rgba(255,255,255,0.1);
+				border-radius: 8px;
+				padding: 20px 24px;
+			}
+			.info-card h4 {
+				font-size: 11px;
+				letter-spacing: 2px;
+				text-transform: uppercase;
+				color: rgba(255,255,255,0.4);
+				margin-bottom: 10px;
+			}
+			.info-card p {
+				font-size: 14px;
+				color: rgba(255,255,255,0.85);
+				line-height: 1.7;
+				margin: 0;
+				border: none;
+				padding: 0;
+			}
+			@media (max-width: 640px) {
+				.info-grid { grid-template-columns: 1fr; }
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+		<div id="wrapper">
+
+			<header id="header">
+				<a href="index.html" class="logo"><strong>HONGKI CHAI</strong> <span>DEV with AI</span></a>
+				<nav><a href="#menu">Menu</a></nav>
+			</header>
+
+			<nav id="menu">
+				<ul class="links">
+					<li><a href="index.html">Home</a></li>
+					<li><a href="index.html#one">Projects</a></li>
+					<li><a href="index.html#two">About</a></li>
+					<li><a href="index.html#contact">Contact</a></li>
+				</ul>
+				<ul class="actions stacked">
+					<li><a href="https://github.com/credflag-oss" class="button primary fit" target="_blank">GitHub</a></li>
+					<li><a href="https://blog.naver.com/cfonk" class="button fit" target="_blank">Blog</a></li>
+				</ul>
+			</nav>
+
+			<!-- Banner -->
+			<section id="banner" class="style2">
+				<div class="inner">
+					<span class="image"><img src="images/pic01.jpg" alt="" /></span>
+					<header class="major">
+						<h1>🎁 기프티모아</h1>
+					</header>
+					<div class="content">
+						<p>가족과 함께 쓰는 기프티콘 관리 앱<br />
+						Android · Kakao Login · Firebase · ML Kit OCR</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Main -->
+			<div id="main" class="alt">
+				<section id="one">
+					<div class="inner">
+
+						<!-- 탭 버튼 -->
+						<div class="project-tabs">
+							<button class="tab-btn active" onclick="showTab('overview')">📋 개요</button>
+							<button class="tab-btn" onclick="showTab('datamodel')">🗄️ 데이터 모델</button>
+							<button class="tab-btn" onclick="showTab('arch')">🏗️ 아키텍처</button>
+							<button class="tab-btn" onclick="showTab('features')">✨ 주요 기능</button>
+						</div>
+
+						<!-- 개요 탭 -->
+						<div id="tab-overview" class="tab-content active">
+							<header class="major"><h2>프로젝트 개요</h2></header>
+							<p>기프티콘을 카메라로 촬영하면 ML Kit OCR이 자동으로 브랜드명·상품명·바코드·유효기간을 인식하고, 가족 구성원과 공유·관리할 수 있는 Android 앱입니다.</p>
+							<div class="info-grid">
+								<div class="info-card">
+									<h4>플랫폼</h4>
+									<p>Android (Kotlin + Jetpack Compose)</p>
+								</div>
+								<div class="info-card">
+									<h4>상태</h4>
+									<p>주요 개발 진행 중</p>
+								</div>
+								<div class="info-card">
+									<h4>아키텍처</h4>
+									<p>Clean Architecture + MVVM</p>
+								</div>
+								<div class="info-card">
+									<h4>인증</h4>
+									<p>Kakao Login SDK → Firebase Custom Auth</p>
+								</div>
+							</div>
+							<div class="tech-grid">
+								<span class="tech-chip chip-blue">Kotlin</span>
+								<span class="tech-chip chip-blue">Jetpack Compose</span>
+								<span class="tech-chip chip-green">Firebase Firestore</span>
+								<span class="tech-chip chip-green">Firebase FCM</span>
+								<span class="tech-chip chip-green">Firebase Storage</span>
+								<span class="tech-chip chip-red">Kakao Login</span>
+								<span class="tech-chip chip-red">ML Kit OCR</span>
+								<span class="tech-chip chip-purple">CameraX</span>
+								<span class="tech-chip chip-purple">ZXing</span>
+								<span class="tech-chip chip-yellow">Hilt DI</span>
+								<span class="tech-chip chip-yellow">Clean Architecture</span>
+							</div>
+						</div>
+
+						<!-- 데이터 모델 탭 -->
+						<div id="tab-datamodel" class="tab-content">
+							<header class="major"><h2>데이터 모델 설계서</h2></header>
+							<div class="iframe-wrap">
+								<iframe src="giftimoa-data-model.html" title="기프티모아 데이터 모델 설계서"></iframe>
+							</div>
+						</div>
+
+						<!-- 아키텍처 탭 -->
+						<div id="tab-arch" class="tab-content">
+							<header class="major"><h2>아키텍처</h2></header>
+							<p>Clean Architecture 3-Layer + MVVM 패턴으로 구성됩니다.</p>
+							<div class="info-grid">
+								<div class="info-card">
+									<h4>Presentation Layer</h4>
+									<p>Jetpack Compose UI · ViewModel · StateFlow · UiState sealed class</p>
+								</div>
+								<div class="info-card">
+									<h4>Domain Layer</h4>
+									<p>UseCase · Repository Interface · Entity · 순수 비즈니스 로직</p>
+								</div>
+								<div class="info-card">
+									<h4>Data Layer</h4>
+									<p>Firebase Firestore · Storage · FCM · Kakao SDK · ML Kit</p>
+								</div>
+								<div class="info-card">
+									<h4>DI</h4>
+									<p>Hilt — Module 단위 의존성 주입 (Network / Firebase / Repository)</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- 주요 기능 탭 -->
+						<div id="tab-features" class="tab-content">
+							<header class="major"><h2>주요 기능</h2></header>
+							<div class="info-grid">
+								<div class="info-card">
+									<h4>📷 OCR 자동 인식</h4>
+									<p>CameraX + ML Kit Text Recognition으로 기프티콘 촬영 시 브랜드·상품명·바코드·유효기간 자동 추출</p>
+								</div>
+								<div class="info-card">
+									<h4>👨‍👩‍👧 가족 공유</h4>
+									<p>6자리 초대 코드로 가족 그룹 생성. ADMIN / MEMBER / CHILD 역할별 권한 분리</p>
+								</div>
+								<div class="info-card">
+									<h4>🔔 만료 알림</h4>
+									<p>Cloud Scheduler + FCM으로 D-7 / D-3 / D-1 만료 임박 푸시 알림 자동 발송</p>
+								</div>
+								<div class="info-card">
+									<h4>🔒 바코드 보안</h4>
+									<p>바코드 번호 AES-256 암호화 저장. 복호화 키는 Android Keystore 보관</p>
+								</div>
+								<div class="info-card">
+									<h4>📴 오프라인 지원</h4>
+									<p>Firestore 로컬 캐시로 네트워크 없이도 기프티콘 바코드 조회 가능</p>
+								</div>
+								<div class="info-card">
+									<h4>🖼️ 이미지 최적화</h4>
+									<p>Cloud Functions 자동 썸네일 생성. 목록은 썸네일, 상세만 원본 로드</p>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</section>
+			</div>
+
+			<!-- Footer -->
+			<footer id="footer">
+				<div class="inner">
+					<ul class="icons">
+						<li><a href="https://github.com/credflag-oss" class="icon brands alt fa-github" target="_blank"><span class="label">GitHub</span></a></li>
+						<li><a href="https://blog.naver.com/cfonk" class="icon solid alt fa-rss" target="_blank"><span class="label">Blog</span></a></li>
+						<li><a href="mailto:credflag@google.net" class="icon solid alt fa-envelope"><span class="label">Email</span></a></li>
+					</ul>
+					<ul class="copyright">
+						<li>&copy; 2026 Hongki Chai</li><li>Design: <a href="https://html5up.net">HTML5 UP</a></li>
+					</ul>
+				</div>
+			</footer>
+
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/jquery.scrollex.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script>
+			function showTab(name) {
+				document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+				document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+				document.getElementById('tab-' + name).classList.add('active');
+				event.target.classList.add('active');
+			}
+		</script>
+	</body>
+</html>
