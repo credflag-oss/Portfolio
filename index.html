@@ -196,7 +196,7 @@
 </html>
 <style>
 	#coming-soon-overlay {
-		display: none;
+		display: none !important;
 		position: fixed;
 		inset: 0;
 		background: rgba(0,0,0,0.7);
@@ -204,7 +204,7 @@
 		align-items: center;
 		justify-content: center;
 	}
-	#coming-soon-overlay.show { display: flex; }
+	#coming-soon-overlay.show { display: flex !important; }
 	#coming-soon-box {
 		background: #1a1f3a;
 		border: 1px solid rgba(255,255,255,0.15);
@@ -238,18 +238,25 @@
 		<span class="emoji">🚧</span>
 		<h3>준비 중입니다</h3>
 		<p>현재 개발 중인 프로젝트예요.<br />조금만 기다려 주세요!</p>
-		<button onclick="document.getElementById('coming-soon-overlay').classList.remove('show')">확인</button>
+		<button onclick="closePopup()">확인</button>
 	</div>
 </div>
 
 <script>
+function closePopup() {
+	var el = document.getElementById('coming-soon-overlay');
+	el.classList.remove('show');
+	el.style.display = 'none';
+}
 document.querySelectorAll('.coming-soon').forEach(function(el) {
 	el.addEventListener('click', function(e) {
 		e.preventDefault();
-		document.getElementById('coming-soon-overlay').classList.add('show');
+		var ov = document.getElementById('coming-soon-overlay');
+		ov.classList.add('show');
+		ov.style.display = 'flex';
 	});
 });
 document.getElementById('coming-soon-overlay').addEventListener('click', function(e) {
-	if (e.target === this) this.classList.remove('show');
+	if (e.target === this) closePopup();
 });
 </script>
